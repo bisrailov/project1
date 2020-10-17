@@ -40,6 +40,11 @@ Parameters:
     Type: String
     Default: 10.0.4.0/24
 
+  ProdBastionSubnetAZ2CIDR:
+    Description: " Prod Bastion Subnet AZ2 CIDR Range "
+    Type: String
+    Default: 10.0.5.0/24
+
   ClientPrefix2:
     Description: " Client AWS Prefix (MTRA) "
     Type: String
@@ -74,6 +79,11 @@ Parameters:
     Description: " Stage Bastion Subnet AZ1 CIDR Range "
     Type: String
     Default: 10.1.4.0/24
+
+  StageBastionSubnetAZ2CIDR:
+    Description: " Stage Bastion Subnet AZ2 CIDR Range "
+    Type: String
+    Default: 10.1.5.0/24
 
 Resources:
   PRODVPC:
@@ -192,6 +202,19 @@ Resources:
       - Key: Name
         Value: Public Subnet 1a
 
+  ProdBastionSubnetAZ2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        !Ref  PRODVPC
+      CidrBlock:
+        !Ref  ProdBastionSubnetAZ2CIDR
+      AvailabilityZone:
+        !Select ['0', !GetAZs ]
+      Tags:
+      - Key: Name
+        Value: Public Subnet 1b
+
   StageWebSubnetAZ1:
     Type: AWS::EC2::Subnet
     Properties:
@@ -258,6 +281,19 @@ Resources:
       - Key: Name
         Value: Public Subnet 1a
 
+  StageBastionSubnetAZ2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        !Ref  STAGEVPC
+      CidrBlock:
+        !Ref  StageBastionSubnetAZ2CIDR
+      AvailabilityZone:
+        !Select ['0', !GetAZs ]
+      Tags:
+      - Key: Name
+        Value: Public Subnet 1b
+
   ProdrtMan:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -274,41 +310,29 @@ Resources:
       - Key: Name
         Value: StagePublic-RT
 
-  ProdrtManassocAZ1:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      RouteTableId: !Ref  ProdrtMan
-      SubnetId: !Ref  ProdWebSubnetAZ1
-
-  StagertManassocAZ1:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      RouteTableId: !Ref  StagertMan
-      SubnetId: !Ref  StageWebSubnetAZ1
-
-  ProdrtManassocAZ2:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      RouteTableId: !Ref  ProdrtMan
-      SubnetId: !Ref  ProdWebSubnetAZ2
-
-  StagertManassocAZ2:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      RouteTableId: !Ref  StagertMan
-      SubnetId: !Ref  StageWebSubnetAZ2
-
-  ProdBastionrtManassocAZ2:
+  ProdBastionrtManassocAZ1:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId: !Ref  ProdrtMan
       SubnetId: !Ref  ProdBastionSubnetAZ1
 
-  StageBastionrtManassocAZ2:
+  ProdBastionrtManassocAZ2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref  ProdrtMan
+      SubnetId: !Ref  ProdBastionSubnetAZ2
+
+  StageBastionrtManassocAZ1:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId: !Ref  StagertMan
       SubnetId: !Ref  StageBastionSubnetAZ1
+
+  StageBastionrtManassocAZ2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref  StagertMan
+      SubnetId: !Ref  StageBastionSubnetAZ2
 
   ProdrtManInternet:
     Type: AWS::EC2::Route
@@ -340,6 +364,29 @@ Resources:
       - Key: Name
         Value: Stage-Private-RT
 
+  ProdrtManassocAZ1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref  ProdrtApp
+      SubnetId: !Ref  ProdWebSubnetAZ1
+
+  StagertManassocAZ1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref  StagertApp
+      SubnetId: !Ref  StageWebSubnetAZ1
+
+  ProdrtManassocAZ2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref  ProdrtApp
+      SubnetId: !Ref  ProdWebSubnetAZ2
+
+  StagertManassocAZ2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref  StagertApp
+      SubnetId: !Ref  StageWebSubnetAZ2
 
   ProdrtAppassocAZ1:
     Type: AWS::EC2::SubnetRouteTableAssociation
@@ -450,6 +497,11 @@ Outputs:
     Value: !Ref  ProdBastionSubnetAZ1
     Export:
       Name: Prod-Bastion-Subnet-AZ1
+  ProdBastionSubnetAZ2:
+    Description: Prod Bastion Subnet AZ2 CIDR
+    Value: !Ref  ProdBastionSubnetAZ2
+    Export:
+      Name: Prod-Bastion-Subnet-AZ2
 
   StageWebSubnetAZ1:
     Description: Stage Web Subnet AZ1 CIDR
@@ -478,3 +530,9 @@ Outputs:
     Value: !Ref  StageBastionSubnetAZ1
     Export:
       Name: Stage-Bastion-Subnet-AZ1
+
+  StageBastionSubnetAZ2:
+    Description: Stage Bastion Subnet AZ2 CIDR
+    Value: !Ref  StageBastionSubnetAZ2
+    Export:
+      Name: Stage-Bastion-Subnet-AZ2
