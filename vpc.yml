@@ -3,12 +3,6 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: Prod and Stage Hosting Environment VPC
 
 Parameters:
-  KeyName:
-    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
-    Type: AWS::EC2::KeyPair::KeyName
-    Default: dev_ubuntu
-    ConstraintDescription: must be the name of an existing EC2 KeyPair.
-
   ClientPrefix1:
     Description: " Client AWS Prefix (MTRA) "
     Type: String

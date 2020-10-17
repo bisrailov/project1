@@ -127,14 +127,15 @@ Resources:
           VolumeSize: '8'
 
       NetworkInterfaces:
-      - AssociatePublicIpAddress: 'true'
-      - DeleteOnTermination: true
+      - SubnetId:
+          Fn::ImportValue: !Sub Prod-Bastion-Subnet-AZ1
+        AssociatePublicIpAddress: 'true'
+        DeleteOnTermination: true
         Description: Main interface
         DeviceIndex: '0'
-      - GroupSet:
+        GroupSet:
         - !Ref  ProdBastionSG
-        SubnetId:
-          Fn::ImportValue: !Sub Prod-Bastion-Subnet-AZ1
+
       Tags:
       - Key: Name
         Value:  BASTION-PROD
@@ -171,14 +172,13 @@ Resources:
           VolumeSize: '8'
 
       NetworkInterfaces:
-      - AssociatePublicIpAddress: 'true'
-      - DeleteOnTermination: true
+      - SubnetId:
+          Fn::ImportValue: !Sub Prod-Web-Subnet-AZ1
+        DeleteOnTermination: true
         Description: Main interface
         DeviceIndex: '0'
-      - GroupSet:
+        GroupSet:
         - !Ref  ProdWeb01SG
-        SubnetId:
-          Fn::ImportValue: !Sub Prod-Web-Subnet-AZ1
       Tags:
       - Key: Name
         Value:  WEB01-PROD
@@ -215,13 +215,14 @@ Resources:
           VolumeSize: '8'
 
       NetworkInterfaces:
-      - DeleteOnTermination: true
+      - SubnetId:
+          Fn::ImportValue: !Sub Prod-App-Subnet-AZ1
+        DeleteOnTermination: true
         Description: Main interface
         DeviceIndex: '0'
-      - GroupSet:
+        GroupSet:
         - !Ref  ProdApp01SG
-        SubnetId:
-          Fn::ImportValue: !Sub Prod-App-Subnet-AZ1
+
       Tags:
       - Key: Name
         Value:  APP01-PROD
@@ -258,13 +259,14 @@ Resources:
           VolumeSize: '8'
 
       NetworkInterfaces:
-      - DeleteOnTermination: true
+      - SubnetId:
+         Fn::ImportValue: !Sub Prod-App-Subnet-AZ2
+        DeleteOnTermination: true
         Description: Main interface
         DeviceIndex: '0'
-      - GroupSet:
+        GroupSet:
         - !Ref  ProdAppSG
-        SubnetId:
-          Fn::ImportValue: !Sub Prod-App-Subnet-AZ2
+
       Tags:
       - Key: Name
         Value:  APP-PROD
@@ -301,14 +303,15 @@ Resources:
           VolumeSize: '8'
 
       NetworkInterfaces:
-      - AssociatePublicIpAddress: 'true'
-      - DeleteOnTermination: true
+      - SubnetId:
+         Fn::ImportValue: !Sub Prod-Web-Subnet-AZ2
+        AssociatePublicIpAddress: 'true'
+        DeleteOnTermination: true
         Description: Main interface
         DeviceIndex: '0'
-      - GroupSet:
+        GroupSet:
         - !Ref  ProdWebSG
-        SubnetId:
-          Fn::ImportValue: !Sub Prod-Web-Subnet-AZ2
+
       Tags:
       - Key: Name
         Value:  WEB-PROD
@@ -345,14 +348,15 @@ Resources:
           VolumeSize: '8'
 
       NetworkInterfaces:
-      - AssociatePublicIpAddress: 'true'
-      - DeleteOnTermination: true
+      - SubnetId:
+         Fn::ImportValue: !Sub Stage-Bastion-Subnet-AZ1
+        AssociatePublicIpAddress: 'true'
+        DeleteOnTermination: true
         Description: Main interface
         DeviceIndex: '0'
-      - GroupSet:
+        GroupSet:
         - !Ref  StageBastionSG
-        SubnetId:
-          Fn::ImportValue: !Sub Stage-Bastion-Subnet-AZ1
+
       Tags:
       - Key: Name
         Value:  BASTION-STAGE
@@ -389,14 +393,14 @@ Resources:
           VolumeSize: '8'
 
       NetworkInterfaces:
-      - AssociatePublicIpAddress: 'true'
-      - DeleteOnTermination: true
+      - SubnetId:
+         Fn::ImportValue: !Sub Stage-Web-Subnet-AZ1
+        DeleteOnTermination: true
         Description: Main interface
         DeviceIndex: '0'
-      - GroupSet:
+        GroupSet:
         - !Ref  StageWeb01SG
-        SubnetId:
-          Fn::ImportValue: !Sub Stage-Web-Subnet-AZ1
+
       Tags:
       - Key: Name
         Value:  WEB01-STAGE
@@ -433,14 +437,14 @@ Resources:
           VolumeSize: '8'
 
       NetworkInterfaces:
-      - AssociatePublicIpAddress: 'true'
-      - DeleteOnTermination: true
+      - SubnetId:
+         Fn::ImportValue: !Sub Stage-Web-Subnet-AZ2
+        DeleteOnTermination: true
         Description: Main interface
         DeviceIndex: '0'
-      - GroupSet:
+        GroupSet:
         - !Ref  StageWebSG
-        SubnetId:
-          Fn::ImportValue: !Sub Stage-Web-Subnet-AZ2
+
       Tags:
       - Key: Name
         Value:  WEB-STAGE
@@ -477,13 +481,14 @@ Resources:
           VolumeSize: '8'
 
       NetworkInterfaces:
-      - DeleteOnTermination: true
+      - SubnetId:
+         Fn::ImportValue: !Sub Stage-App-Subnet-AZ2
+        DeleteOnTermination: true
         Description: Main interface
         DeviceIndex: '0'
-      - GroupSet:
+        GroupSet:
         - !Ref  StageAppSG
-        SubnetId:
-          Fn::ImportValue: !Sub Stage-App-Subnet-AZ2
+
       Tags:
       - Key: Name
         Value:  WEB-STAGE
@@ -520,13 +525,14 @@ Resources:
           VolumeSize: '8'
 
       NetworkInterfaces:
-      - DeleteOnTermination: true
+      - SubnetId:
+          Fn::ImportValue: !Sub Stage-App-Subnet-AZ1
+        DeleteOnTermination: true
         Description: Main interface
         DeviceIndex: '0'
-      - GroupSet:
+        GroupSet:
         - !Ref  StageApp01SG
-        SubnetId:
-          Fn::ImportValue: !Sub Stage-App-Subnet-AZ1
+
       Tags:
       - Key: Name
         Value:  WEB-STAGE
