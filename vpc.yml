@@ -1,0 +1,480 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Prod and Stage Hosting Environment VPC
+
+Parameters:
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
+    Type: AWS::EC2::KeyPair::KeyName
+    Default: dev_ubuntu
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+
+  ClientPrefix1:
+    Description: " Client AWS Prefix (MTRA) "
+    Type: String
+    Default: PROD
+
+  PRODVPCCIDR:
+    Description: VPC CIDR range
+    Type: String
+    Default: 10.0.0.0/16
+  ProdWebSubnetAZ1CIDR:
+    Description: " Prod Web Subnet AZ1 CIDR Range "
+    Type: String
+    Default: 10.0.0.0/24
+  ProdWebSubnetAZ2CIDR:
+    Description: " Prod Web Subnet AZ2 CIDR Range "
+    Type: String
+    Default: 10.0.1.0/24
+  ProdAppSubnetAZ1CIDR:
+    Description: " Prod Web Subnet AZ1 CIDR Range "
+    Type: String
+    Default: 10.0.2.0/24
+  ProdAppSubnetAZ2CIDR:
+    Description: " Prod App Subnet AZ2 CIDR Range "
+    Type: String
+    Default: 10.0.3.0/24
+
+  ProdBastionSubnetAZ1CIDR:
+    Description: " Prod Bastion Subnet AZ1 CIDR Range "
+    Type: String
+    Default: 10.0.4.0/24
+
+  ClientPrefix2:
+    Description: " Client AWS Prefix (MTRA) "
+    Type: String
+    Default: STAGE
+
+  STAGEVPCCIDR:
+    Description: VPC CIDR range
+    Type: String
+    Default: 10.1.0.0/16
+
+  StageWebSubnetAZ1CIDR:
+    Description: " Stage Web Subnet AZ1 CIDR Range "
+    Type: String
+    Default: 10.1.0.0/24
+
+  StageWebSubnetAZ2CIDR:
+    Description: " Stage Web Subnet AZ2 CIDR Range "
+    Type: String
+    Default: 10.1.1.0/24
+
+  StageAppSubnetAZ1CIDR:
+    Description: " Stage Web Subnet AZ1 CIDR Range "
+    Type: String
+    Default: 10.1.2.0/24
+
+  StageAppSubnetAZ2CIDR:
+    Description: " Stage App Subnet AZ2 CIDR Range "
+    Type: String
+    Default: 10.1.3.0/24
+
+  StageBastionSubnetAZ1CIDR:
+    Description: " Stage Bastion Subnet AZ1 CIDR Range "
+    Type: String
+    Default: 10.1.4.0/24
+
+Resources:
+  PRODVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref PRODVPCCIDR
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+      - Key: Name
+        Value: Prod-VPC
+
+  STAGEVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref STAGEVPCCIDR
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+      - Key: Name
+        Value: Stage-VPC
+
+  PRODGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value: Prod-igw
+
+  STAGEGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value: Stage-igw
+
+  PRODGatewayAttatch:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId:
+        !Ref  PRODGateway
+      VpcId:
+        !Ref  PRODVPC
+
+  STAGEGatewayAttatch:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId:
+        !Ref  STAGEGateway
+      VpcId:
+        !Ref  STAGEVPC
+
+  ProdWebSubnetAZ1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        !Ref  PRODVPC
+      CidrBlock:
+        !Ref  ProdWebSubnetAZ1CIDR
+      AvailabilityZone:
+        !Select ['0', !GetAZs ]
+      Tags:
+      - Key: Name
+        Value: Web Subnet
+
+  ProdWebSubnetAZ2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        !Ref  PRODVPC
+      CidrBlock:
+        !Ref  ProdWebSubnetAZ2CIDR
+      AvailabilityZone:
+        !Select ['1', !GetAZs ]
+      Tags:
+      - Key: Name
+        Value: Web Subnet
+
+
+  ProdAppSubnetAZ1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        !Ref  PRODVPC
+      CidrBlock:
+        !Ref  ProdAppSubnetAZ1CIDR
+      AvailabilityZone:
+        !Select ['0', !GetAZs ]
+      Tags:
+      - Key: Name
+        Value: App Subnet
+
+  ProdAppSubnetAZ2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        !Ref  PRODVPC
+      CidrBlock:
+        !Ref  ProdAppSubnetAZ2CIDR
+      AvailabilityZone:
+        !Select ['1', !GetAZs ]
+      Tags:
+      - Key: Name
+        Value: App Subnet
+
+  ProdBastionSubnetAZ1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        !Ref  PRODVPC
+      CidrBlock:
+        !Ref  ProdBastionSubnetAZ1CIDR
+      AvailabilityZone:
+        !Select ['0', !GetAZs ]
+      Tags:
+      - Key: Name
+        Value: Public Subnet 1a
+
+  StageWebSubnetAZ1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        !Ref  STAGEVPC
+      CidrBlock:
+        !Ref  StageWebSubnetAZ1CIDR
+      AvailabilityZone:
+        !Select ['0', !GetAZs ]
+      Tags:
+      - Key: Name
+        Value: Web Subnet
+
+  StageWebSubnetAZ2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        !Ref  STAGEVPC
+      CidrBlock:
+        !Ref  StageWebSubnetAZ2CIDR
+      AvailabilityZone:
+        !Select ['1', !GetAZs ]
+      Tags:
+      - Key: Name
+        Value: Web Subnet
+
+
+  StageAppSubnetAZ1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        !Ref  STAGEVPC
+      CidrBlock:
+        !Ref  StageAppSubnetAZ1CIDR
+      AvailabilityZone:
+        !Select ['0', !GetAZs ]
+      Tags:
+      - Key: Name
+        Value: App Subnet
+
+  StageAppSubnetAZ2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        !Ref  STAGEVPC
+      CidrBlock:
+        !Ref  StageAppSubnetAZ2CIDR
+      AvailabilityZone:
+        !Select ['1', !GetAZs ]
+      Tags:
+      - Key: Name
+        Value: App Subnet
+
+  StageBastionSubnetAZ1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        !Ref  STAGEVPC
+      CidrBlock:
+        !Ref  StageBastionSubnetAZ1CIDR
+      AvailabilityZone:
+        !Select ['0', !GetAZs ]
+      Tags:
+      - Key: Name
+        Value: Public Subnet 1a
+
+  ProdrtMan:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref  PRODVPC
+      Tags:
+      - Key: Name
+        Value: ProdPublic-RT
+
+  StagertMan:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref  STAGEVPC
+      Tags:
+      - Key: Name
+        Value: StagePublic-RT
+
+  ProdrtManassocAZ1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref  ProdrtMan
+      SubnetId: !Ref  ProdWebSubnetAZ1
+
+  StagertManassocAZ1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref  StagertMan
+      SubnetId: !Ref  StageWebSubnetAZ1
+
+  ProdrtManassocAZ2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref  ProdrtMan
+      SubnetId: !Ref  ProdWebSubnetAZ2
+
+  StagertManassocAZ2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref  StagertMan
+      SubnetId: !Ref  StageWebSubnetAZ2
+
+  ProdBastionrtManassocAZ2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref  ProdrtMan
+      SubnetId: !Ref  ProdBastionSubnetAZ1
+
+  StageBastionrtManassocAZ2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref  StagertMan
+      SubnetId: !Ref  StageBastionSubnetAZ1
+
+  ProdrtManInternet:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      RouteTableId: !Ref  ProdrtMan
+      GatewayId: !Ref  PRODGateway
+
+  StagertManInternet:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      RouteTableId: !Ref  StagertMan
+      GatewayId: !Ref  STAGEGateway
+
+  ProdrtApp:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref  PRODVPC
+      Tags:
+      - Key: Name
+        Value: Prod-Private-RT
+
+  StagertApp:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref  STAGEVPC
+      Tags:
+      - Key: Name
+        Value: Stage-Private-RT
+
+
+  ProdrtAppassocAZ1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref  ProdrtApp
+      SubnetId: !Ref  ProdAppSubnetAZ1
+
+  ProdrtAppassocAZ2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref  ProdrtApp
+      SubnetId: !Ref  ProdAppSubnetAZ2
+
+  StagertAppassocAZ1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref  StagertApp
+      SubnetId: !Ref  StageAppSubnetAZ1
+
+  StagertAppassocAZ2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref  StagertApp
+      SubnetId: !Ref  StageAppSubnetAZ2
+
+  myVPCPeering:
+    Type: AWS::EC2::VPCPeeringConnection
+    Properties:
+      Tags:
+      - Key: Name
+        Value: prod-stage
+      VpcId:
+        Ref: PRODVPC
+      PeerVpcId:
+        Ref: STAGEVPC
+
+Outputs:
+  ClientPrefix:
+    Description: Client Prefix1
+    Value: !Ref  ClientPrefix1
+    Export:
+      Name: ClientPrefix1
+  ClientPrefix2:
+    Description: Client Prefix2
+    Value: !Ref  ClientPrefix2
+    Export:
+      Name: ClientPrefix2
+
+  VpcId1:
+    Description: VPC ID
+    Value: !Ref  PRODVPC
+    Export:
+      Name: PROD-VPCID
+
+  VpcId2:
+    Description: VPC ID
+    Value: !Ref  STAGEVPC
+    Export:
+      Name: STAGE-VPCID
+
+  GatewayID1:
+    Description: Internet Gateway ID
+    Value: !Ref  PRODGateway
+    Export:
+      Name: PROD-InternetGateway
+
+  GatewayID2:
+    Description: Internet Gateway ID
+    Value: !Ref  STAGEGateway
+    Export:
+      Name: STAGE-InternetGateway
+
+  VpcCIDR1:
+    Description: PROD VPC CIDR range
+    Value: !Ref  PRODVPCCIDR
+    Export:
+      Name: PROD-VPC-CIDR
+
+  VpcCIDR2:
+    Description: STAGE VPC CIDR range
+    Value: !Ref  STAGEVPCCIDR
+    Export:
+      Name: STAGE-VPC-CIDR
+
+
+  ProdWebSubnetAZ1:
+    Description: Prod Web Subnet AZ1 CIDR
+    Value: !Ref  ProdWebSubnetAZ1
+    Export:
+      Name: Prod-Web-Subnet-AZ1
+  ProdWebSubnetAZ2:
+    Description: Prod Web Subnet AZ2 CIDR
+    Value: !Ref  ProdWebSubnetAZ2
+    Export:
+      Name: Prod-Web-Subnet-AZ2
+  ProdAppSubnetAZ1:
+    Description: Prod App Subnet AZ1 CIDR
+    Value: !Ref  ProdAppSubnetAZ1
+    Export:
+      Name: Prod-App-Subnet-AZ1
+  ProdAppSubnetAZ2:
+    Description: Prod App Subnet AZ2 CIDR
+    Value: !Ref  ProdAppSubnetAZ2
+    Export:
+      Name: Prod-App-Subnet-AZ2
+  ProdBastionSubnetAZ1:
+    Description: Prod Bastion Subnet AZ1 CIDR
+    Value: !Ref  ProdBastionSubnetAZ1
+    Export:
+      Name: Prod-Bastion-Subnet-AZ1
+
+  StageWebSubnetAZ1:
+    Description: Stage Web Subnet AZ1 CIDR
+    Value: !Ref  StageWebSubnetAZ1
+    Export:
+      Name: Stage-Web-Subnet-AZ1
+  StageWebSubnetAZ2:
+    Description: Stage Web Subnet AZ1 CIDR
+    Value: !Ref  StageWebSubnetAZ2
+    Export:
+      Name: Stage-Web-Subnet-AZ2
+  StageAppSubnetAZ1:
+    Description: Stage App Subnet AZ1 CIDR
+    Value: !Ref  StageAppSubnetAZ1
+    Export:
+      Name: Stage-App-Subnet-AZ1
+
+  StageAppSubnetAZ2:
+    Description: Stage App Subnet AZ2 CIDR
+    Value: !Ref  StageAppSubnetAZ2
+    Export:
+      Name: Stage-App-Subnet-AZ2
+
+  StageBastionSubnetAZ1:
+    Description: Stage Bastion Subnet AZ1 CIDR
+    Value: !Ref  StageBastionSubnetAZ1
+    Export:
+      Name: Stage-Bastion-Subnet-AZ1
