@@ -451,7 +451,7 @@ Resources:
          - EIP
          - AllocationId
       SubnetId:
-         Ref: STageBastionSubnetAZ1
+         Ref: StageBastionSubnetAZ1
       Tags:
       - Key: foo
         Value: bar
