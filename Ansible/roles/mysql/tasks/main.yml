@@ -1,0 +1,25 @@
+---
+
+- name: Install mysql package
+  apt:
+    state: present
+    name: 
+      - mysql-server
+      - python-mysqldb
+  tags: db
+
+- name: Create wordpress database
+  mysql_db:
+    name: "{{ wp_db_name }}"
+    state: present
+  tags: db
+  notify: restart mysql
+
+- name: Create db user
+  mysql_user: 
+    name: "{{ wp_db_user }}"
+    password: "{{ wp_db_password }}"
+    priv: "{{ wp_db_name }}.*:ALL"
+    host: localhost
+    state: present
+  tags: db

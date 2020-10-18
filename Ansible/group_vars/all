@@ -1,0 +1,17 @@
+ubuntu: bionic
+ansible_become: yes
+ansible_become_method: sudo
+
+
+
+# Database variable
+wp_db_name: Wordpress
+wp_db_user: wordpress
+wp_db_password: supersecret
+
+# wordpress
+wp_version: latest
+
+# nginx variables
+nginx_port: 80
+server_hostname: example.com

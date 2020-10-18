@@ -1,0 +1,32 @@
+# This is for /home/$yourusername/.ssh/config
+# make sure to change Elastic IP addresses, pem key file locations and PrivateIP addresses.
+
+Host BASTION-PROD
+        User ubuntu
+        Hostname $ElasticIPAddressofBASTION-PROD
+        IdentityFile  ~/$LocationOfPemKeyFile/ubuntu.pem
+
+Host BASTION-STAGE
+        User ubuntu
+        Hostname $ElasticIPAddressofBASTION-STAGE
+        IdentityFile  ~/$LocationOfPemKeyFile/ubuntu.pem
+
+Host WEB01-PROD
+        ProxyCommand ssh -q BASTION-PROD nc -q0 $PrivateIPAddress 22
+        User ubuntu
+        IdentityFile ~/$LocationOfPemKeyFile/ubuntu.pem
+
+Host WEB-PROD
+        ProxyCommand ssh -q BASTION-PROD nc -q0 $PrivateIPAddress 22
+        User ubuntu
+        IdentityFile ~/$LocationOfPemKeyFile/ubuntu.pem
+
+Host WEB-STAGE
+        ProxyCommand ssh -q BASTION-STAGE nc -q0 $PrivateIPAddress 22
+        User ubuntu
+        IdentityFile ~/$LocationOfPemKeyFile/ubuntu.pem
+
+Host WEB01-STAGE
+        ProxyCommand ssh -q BASTION-STAGE nc -q0 $PrivateIPAddress 22
+        User ubuntu
+        IdentityFile ~/$LocationOfPemKeyFile/ubuntu.pem
