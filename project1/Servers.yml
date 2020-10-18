@@ -1,0 +1,554 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Prod Environment Instances
+
+Parameters:
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
+    Type: AWS::EC2::KeyPair::KeyName
+    Default: ubuntu
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+
+
+  ProdBastionInstanceType:
+    Description: Prod Bastion EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t3.medium
+
+  ProdWeb01InstanceType:
+    Description: Prod Web 01 EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t3.large
+
+  ProdWebInstanceType:
+    Description: Prod Web EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t3.large
+
+  ProdApp01InstanceType:
+    Description: Prod App 01 EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t3.large
+
+  ProdAppInstanceType:
+    Description: Prod App 01 EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t3.large
+
+  StageBastionInstanceType:
+    Description: Stage Bastion EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+
+  StageWeb01InstanceType:
+    Description: Stage Web 01 EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t3.large
+
+  StageWebInstanceType:
+    Description: Stage Web EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t3.large
+
+  StageApp01InstanceType:
+    Description: Stage App 01 EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t3.medium
+
+  StageAppInstanceType:
+    Description: Stage App 01 EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t3.medium
+
+Mappings:
+  AWSInstanceType2Arch:
+    t2.micro:
+      'Arch': '64'
+    t3.medium:
+      'Arch': '64'
+    t3.large:
+      'Arch': '64'
+  AWSRegionArch2AMI:
+    us-west-2:
+      '64': 'ami-a58d0dc5'
+    us-west-1:
+      '64': 'ami-d8bdebb8'
+    us-east-1:
+      '64': 'ami-0ac80df6eff0e70b5'
+    us-east-2:
+      '64': 'ami-618fab04'
+    ca-central-1:
+      '64': 'ami-3d299b59'
+
+Resources:
+
+  ProdBastionInstanceAZ1:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref  ProdBastionInstanceType
+      KeyName:  !Ref  KeyName
+      EbsOptimized: false
+      ImageId:  !FindInMap [ AWSRegionArch2AMI, !Ref 'AWS::Region', !FindInMap [ AWSInstanceType2Arch, !Ref  ProdBastionInstanceType, Arch ] ]
+      DisableApiTermination: 'true'
+      BlockDeviceMappings:
+      - DeviceName: "/dev/sda1"
+        Ebs:
+          VolumeType: gp2
+          DeleteOnTermination: true
+          VolumeSize: '8'
+
+      NetworkInterfaces:
+      - SubnetId:
+          Fn::ImportValue: !Sub Prod-Bastion-Subnet-AZ1
+        AssociatePublicIpAddress: 'true'
+        DeleteOnTermination: true
+        Description: Main interface
+        DeviceIndex: '0'
+        GroupSet:
+        - !Ref  ProdBastionSG
+
+      Tags:
+      - Key: Name
+        Value:  BASTION-PROD
+
+  ProdBastionSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Bastion Security Group
+      VpcId:
+        Fn::ImportValue: PROD-VPCID
+      SecurityGroupIngress:
+      - IpProtocol: "-1"
+        CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+      - IpProtocol: "-1"
+        CidrIp: 0.0.0.0/0
+      Tags:
+      - Key: Name
+        Value: Bastion-PROD-SG
+
+  ProdWeb01InstanceAZ1:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref  ProdWeb01InstanceType
+      KeyName:  !Ref  KeyName
+      EbsOptimized: false
+      ImageId:  !FindInMap [ AWSRegionArch2AMI, !Ref 'AWS::Region', !FindInMap [ AWSInstanceType2Arch, !Ref  ProdWeb01InstanceType, Arch ] ]
+      DisableApiTermination: 'true'
+      BlockDeviceMappings:
+      - DeviceName: "/dev/sda1"
+        Ebs:
+          VolumeType: gp2
+          DeleteOnTermination: true
+          VolumeSize: '8'
+
+      NetworkInterfaces:
+      - SubnetId:
+          Fn::ImportValue: !Sub Prod-Web-Subnet-AZ1
+        DeleteOnTermination: true
+        Description: Main interface
+        DeviceIndex: '0'
+        GroupSet:
+        - !Ref  ProdWeb01SG
+      Tags:
+      - Key: Name
+        Value:  WEB01-PROD
+
+  ProdWeb01SG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Web01 Security Group
+      VpcId:
+        Fn::ImportValue: PROD-VPCID
+      SecurityGroupIngress:
+      - IpProtocol: "-1"
+        CidrIp: 10.0.4.0/24
+      SecurityGroupEgress:
+      - IpProtocol: "-1"
+        CidrIp: 0.0.0.0/0
+      Tags:
+      - Key: Name
+        Value: WEB01-PROD-SG
+
+  ProdApp01InstanceAZ1:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref  ProdApp01InstanceType
+      KeyName:  !Ref  KeyName
+      EbsOptimized: false
+      ImageId:  !FindInMap [ AWSRegionArch2AMI, !Ref 'AWS::Region', !FindInMap [ AWSInstanceType2Arch, !Ref  ProdApp01InstanceType, Arch ] ]
+      DisableApiTermination: 'true'
+      BlockDeviceMappings:
+      - DeviceName: "/dev/sda1"
+        Ebs:
+          VolumeType: gp2
+          DeleteOnTermination: true
+          VolumeSize: '8'
+
+      NetworkInterfaces:
+      - SubnetId:
+          Fn::ImportValue: !Sub Prod-App-Subnet-AZ1
+        DeleteOnTermination: true
+        Description: Main interface
+        DeviceIndex: '0'
+        GroupSet:
+        - !Ref  ProdApp01SG
+
+      Tags:
+      - Key: Name
+        Value:  APP01-PROD
+
+  ProdApp01SG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: App01 Security Group
+      VpcId:
+        Fn::ImportValue: PROD-VPCID
+      SecurityGroupIngress:
+      - IpProtocol: "-1"
+        CidrIp: 10.0.4.0/24
+      SecurityGroupEgress:
+      - IpProtocol: "-1"
+        CidrIp: 0.0.0.0/0
+      Tags:
+      - Key: Name
+        Value: APP01-PROD-SG
+
+  ProdAppInstanceAZ2:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref  ProdAppInstanceType
+      KeyName:  !Ref  KeyName
+      EbsOptimized: false
+      ImageId:  !FindInMap [ AWSRegionArch2AMI, !Ref 'AWS::Region', !FindInMap [ AWSInstanceType2Arch, !Ref  ProdAppInstanceType, Arch ] ]
+      DisableApiTermination: 'true'
+      BlockDeviceMappings:
+      - DeviceName: "/dev/sda1"
+        Ebs:
+          VolumeType: gp2
+          DeleteOnTermination: true
+          VolumeSize: '8'
+
+      NetworkInterfaces:
+      - SubnetId:
+         Fn::ImportValue: !Sub Prod-App-Subnet-AZ2
+        DeleteOnTermination: true
+        Description: Main interface
+        DeviceIndex: '0'
+        GroupSet:
+        - !Ref  ProdAppSG
+
+      Tags:
+      - Key: Name
+        Value:  APP-PROD
+
+  ProdAppSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: App Security Group
+      VpcId:
+        Fn::ImportValue: PROD-VPCID
+      SecurityGroupIngress:
+      - IpProtocol: "-1"
+        CidrIp: 10.0.4.0/24
+      SecurityGroupEgress:
+      - IpProtocol: "-1"
+        CidrIp: 0.0.0.0/0
+      Tags:
+      - Key: Name
+        Value: APP-PROD-SG
+
+  ProdWebInstanceAZ2:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref  ProdWebInstanceType
+      KeyName:  !Ref  KeyName
+      EbsOptimized: false
+      ImageId:  !FindInMap [ AWSRegionArch2AMI, !Ref 'AWS::Region', !FindInMap [ AWSInstanceType2Arch, !Ref  ProdWebInstanceType, Arch ] ]
+      DisableApiTermination: 'true'
+      BlockDeviceMappings:
+      - DeviceName: "/dev/sda1"
+        Ebs:
+          VolumeType: gp2
+          DeleteOnTermination: true
+          VolumeSize: '8'
+
+      NetworkInterfaces:
+      - SubnetId:
+         Fn::ImportValue: !Sub Prod-Web-Subnet-AZ2
+        AssociatePublicIpAddress: 'true'
+        DeleteOnTermination: true
+        Description: Main interface
+        DeviceIndex: '0'
+        GroupSet:
+        - !Ref  ProdWebSG
+
+      Tags:
+      - Key: Name
+        Value:  WEB-PROD
+
+  ProdWebSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Web Security Group
+      VpcId:
+        Fn::ImportValue: PROD-VPCID
+      SecurityGroupIngress:
+      - IpProtocol: "-1"
+        CidrIp: 10.0.4.0/24
+      SecurityGroupEgress:
+      - IpProtocol: "-1"
+        CidrIp: 0.0.0.0/0
+      Tags:
+      - Key: Name
+        Value: WEB-PROD-SG
+
+  StageBastionInstanceAZ1:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref  StageBastionInstanceType
+      KeyName:  !Ref  KeyName
+      EbsOptimized: false
+      ImageId:  !FindInMap [ AWSRegionArch2AMI, !Ref 'AWS::Region', !FindInMap [ AWSInstanceType2Arch, !Ref  StageBastionInstanceType, Arch ] ]
+      DisableApiTermination: 'true'
+      BlockDeviceMappings:
+      - DeviceName: "/dev/sda1"
+        Ebs:
+          VolumeType: gp2
+          DeleteOnTermination: true
+          VolumeSize: '8'
+
+      NetworkInterfaces:
+      - SubnetId:
+         Fn::ImportValue: !Sub Stage-Bastion-Subnet-AZ1
+        AssociatePublicIpAddress: 'true'
+        DeleteOnTermination: true
+        Description: Main interface
+        DeviceIndex: '0'
+        GroupSet:
+        - !Ref  StageBastionSG
+
+      Tags:
+      - Key: Name
+        Value:  BASTION-STAGE
+
+  StageBastionSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Bastion Security Group
+      VpcId:
+        Fn::ImportValue: STAGE-VPCID
+      SecurityGroupIngress:
+      - IpProtocol: "-1"
+        CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+      - IpProtocol: "-1"
+        CidrIp: 0.0.0.0/0
+      Tags:
+      - Key: Name
+        Value: BASTION-STAGE-SG
+
+  StageWeb01InstanceAZ1:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref  StageWeb01InstanceType
+      KeyName:  !Ref  KeyName
+      EbsOptimized: false
+      ImageId:  !FindInMap [ AWSRegionArch2AMI, !Ref 'AWS::Region', !FindInMap [ AWSInstanceType2Arch, !Ref  StageWeb01InstanceType, Arch ] ]
+      DisableApiTermination: 'true'
+      BlockDeviceMappings:
+      - DeviceName: "/dev/sda1"
+        Ebs:
+          VolumeType: gp2
+          DeleteOnTermination: true
+          VolumeSize: '8'
+
+      NetworkInterfaces:
+      - SubnetId:
+         Fn::ImportValue: !Sub Stage-Web-Subnet-AZ1
+        DeleteOnTermination: true
+        Description: Main interface
+        DeviceIndex: '0'
+        GroupSet:
+        - !Ref  StageWeb01SG
+
+      Tags:
+      - Key: Name
+        Value:  WEB01-STAGE
+
+  StageWeb01SG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Web01 Security Group
+      VpcId:
+        Fn::ImportValue: STAGE-VPCID
+      SecurityGroupIngress:
+      - IpProtocol: "-1"
+        CidrIp: 10.1.4.0/24
+      SecurityGroupEgress:
+      - IpProtocol: "-1"
+        CidrIp: 0.0.0.0/0
+      Tags:
+      - Key: Name
+        Value: WEB01-STAGE-SG
+
+  StageWebInstanceAZ2:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref  StageWebInstanceType
+      KeyName:  !Ref  KeyName
+      EbsOptimized: false
+      ImageId:  !FindInMap [ AWSRegionArch2AMI, !Ref 'AWS::Region', !FindInMap [ AWSInstanceType2Arch, !Ref  StageWebInstanceType, Arch ] ]
+      DisableApiTermination: 'true'
+      BlockDeviceMappings:
+      - DeviceName: "/dev/sda1"
+        Ebs:
+          VolumeType: gp2
+          DeleteOnTermination: true
+          VolumeSize: '8'
+
+      NetworkInterfaces:
+      - SubnetId:
+         Fn::ImportValue: !Sub Stage-Web-Subnet-AZ2
+        DeleteOnTermination: true
+        Description: Main interface
+        DeviceIndex: '0'
+        GroupSet:
+        - !Ref  StageWebSG
+
+      Tags:
+      - Key: Name
+        Value:  WEB-STAGE
+
+  StageWebSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Web Security Group
+      VpcId:
+        Fn::ImportValue: STAGE-VPCID
+      SecurityGroupIngress:
+      - IpProtocol: "-1"
+        CidrIp: 10.1.4.0/24
+      SecurityGroupEgress:
+      - IpProtocol: "-1"
+        CidrIp: 0.0.0.0/0
+      Tags:
+      - Key: Name
+        Value: WEB-STAGE-SG
+
+  StageAppInstanceAZ2:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref  StageAppInstanceType
+      KeyName:  !Ref  KeyName
+      EbsOptimized: false
+      ImageId:  !FindInMap [ AWSRegionArch2AMI, !Ref 'AWS::Region', !FindInMap [ AWSInstanceType2Arch, !Ref  StageAppInstanceType, Arch ] ]
+      DisableApiTermination: 'true'
+      BlockDeviceMappings:
+      - DeviceName: "/dev/sda1"
+        Ebs:
+          VolumeType: gp2
+          DeleteOnTermination: true
+          VolumeSize: '8'
+
+      NetworkInterfaces:
+      - SubnetId:
+         Fn::ImportValue: !Sub Stage-App-Subnet-AZ2
+        DeleteOnTermination: true
+        Description: Main interface
+        DeviceIndex: '0'
+        GroupSet:
+        - !Ref  StageAppSG
+
+      Tags:
+      - Key: Name
+        Value:  WEB-STAGE
+
+  StageAppSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: App Security Group
+      VpcId:
+        Fn::ImportValue: STAGE-VPCID
+      SecurityGroupIngress:
+      - IpProtocol: "-1"
+        CidrIp: 10.1.4.0/24
+      SecurityGroupEgress:
+      - IpProtocol: "-1"
+        CidrIp: 0.0.0.0/0
+      Tags:
+      - Key: Name
+        Value: APP-STAGE-SG
+
+  StageApp01InstanceAZ1:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref  StageApp01InstanceType
+      KeyName:  !Ref  KeyName
+      EbsOptimized: false
+      ImageId:  !FindInMap [ AWSRegionArch2AMI, !Ref 'AWS::Region', !FindInMap [ AWSInstanceType2Arch, !Ref  StageApp01InstanceType, Arch ] ]
+      DisableApiTermination: 'true'
+      BlockDeviceMappings:
+      - DeviceName: "/dev/sda1"
+        Ebs:
+          VolumeType: gp2
+          DeleteOnTermination: true
+          VolumeSize: '8'
+
+      NetworkInterfaces:
+      - SubnetId:
+          Fn::ImportValue: !Sub Stage-App-Subnet-AZ1
+        DeleteOnTermination: true
+        Description: Main interface
+        DeviceIndex: '0'
+        GroupSet:
+        - !Ref  StageApp01SG
+
+      Tags:
+      - Key: Name
+        Value:  WEB-STAGE
+
+  StageApp01SG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: App01 Security Group
+      VpcId:
+        Fn::ImportValue: STAGE-VPCID
+      SecurityGroupIngress:
+      - IpProtocol: "-1"
+        CidrIp: 10.1.4.0/24
+      SecurityGroupEgress:
+      - IpProtocol: "-1"
+        CidrIp: 0.0.0.0/0
+      Tags:
+      - Key: Name
+        Value: APP01-STAGE-SG

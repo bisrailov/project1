@@ -1,0 +1,51 @@
+---
+
+- name: test command
+  shell: cat /etc/os-release
+  tags: base
+
+- name: set hostname
+  hostname: name="{{ hostname }}"
+  tags: base
+
+- name: configure hosts file
+  template:
+    src: hosts.j2
+    dest: /etc/hosts
+  tags: base
+
+- name: add multiverse repos
+  apt_repository: repo='deb http://us.archive.ubuntu.com/ubuntu/ {{ ubuntu }} multiverse' state=present mode=0644
+  tags: base
+
+- name: add updates repo
+  apt_repository: repo='deb http://us.archive.ubuntu.com/ubuntu/ {{ ubuntu }}-updates multiverse' state=present
+  tags: base
+
+- name: apt update
+  apt: update_cache=yes
+  tags: base
+
+- name: apt upgrade
+  apt: upgrade=yes
+  tags: base
+
+- name: install base packages
+  apt:
+    state: present
+    name:
+      - git
+      - python3-pip
+      - ntp
+      - bc
+      - unzip
+      - clamav
+      - nfs-common
+  tags: base
+
+- name: Start service ntp, if not started
+  service:
+    name: ntp
+    state: started
+    enabled: yes
+  tags: base
