@@ -191,7 +191,7 @@ Resources:
         Fn::ImportValue: PROD-VPCID
       SecurityGroupIngress:
       - IpProtocol: "-1"
-        CidrIp: 0.0.0.0/0
+        CidrIp: 10.0.4.0/24
       SecurityGroupEgress:
       - IpProtocol: "-1"
         CidrIp: 0.0.0.0/0
@@ -235,7 +235,7 @@ Resources:
         Fn::ImportValue: PROD-VPCID
       SecurityGroupIngress:
       - IpProtocol: "-1"
-        CidrIp: 0.0.0.0/0
+        CidrIp: 10.0.4.0/24
       SecurityGroupEgress:
       - IpProtocol: "-1"
         CidrIp: 0.0.0.0/0
@@ -279,7 +279,7 @@ Resources:
         Fn::ImportValue: PROD-VPCID
       SecurityGroupIngress:
       - IpProtocol: "-1"
-        CidrIp: 0.0.0.0/0
+        CidrIp: 10.0.4.0/24
       SecurityGroupEgress:
       - IpProtocol: "-1"
         CidrIp: 0.0.0.0/0
@@ -324,7 +324,7 @@ Resources:
         Fn::ImportValue: PROD-VPCID
       SecurityGroupIngress:
       - IpProtocol: "-1"
-        CidrIp: 0.0.0.0/0
+        CidrIp: 10.0.4.0/24
       SecurityGroupEgress:
       - IpProtocol: "-1"
         CidrIp: 0.0.0.0/0
@@ -413,7 +413,7 @@ Resources:
         Fn::ImportValue: STAGE-VPCID
       SecurityGroupIngress:
       - IpProtocol: "-1"
-        CidrIp: 0.0.0.0/0
+        CidrIp: 10.1.4.0/24
       SecurityGroupEgress:
       - IpProtocol: "-1"
         CidrIp: 0.0.0.0/0
@@ -457,7 +457,7 @@ Resources:
         Fn::ImportValue: STAGE-VPCID
       SecurityGroupIngress:
       - IpProtocol: "-1"
-        CidrIp: 0.0.0.0/0
+        CidrIp: 10.1.4.0/24
       SecurityGroupEgress:
       - IpProtocol: "-1"
         CidrIp: 0.0.0.0/0
@@ -501,7 +501,7 @@ Resources:
         Fn::ImportValue: STAGE-VPCID
       SecurityGroupIngress:
       - IpProtocol: "-1"
-        CidrIp: 0.0.0.0/0
+        CidrIp: 10.1.4.0/24
       SecurityGroupEgress:
       - IpProtocol: "-1"
         CidrIp: 0.0.0.0/0
@@ -545,7 +545,7 @@ Resources:
         Fn::ImportValue: STAGE-VPCID
       SecurityGroupIngress:
       - IpProtocol: "-1"
-        CidrIp: 0.0.0.0/0
+        CidrIp: 10.1.4.0/24
       SecurityGroupEgress:
       - IpProtocol: "-1"
         CidrIp: 0.0.0.0/0

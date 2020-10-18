@@ -417,6 +417,58 @@ Resources:
       PeerVpcId:
         Ref: STAGEVPC
 
+  NATProd:
+   Type: AWS::EC2::NatGateway
+   Properties:
+      AllocationId:
+         Fn::GetAtt:
+         - EIP
+         - AllocationId
+      SubnetId:
+         Ref: ProdBastionSubnetAZ1
+      Tags:
+      - Key: foo
+        Value: bar
+  EIP:
+     DependsOn: PRODGatewayAttatch
+     Type: AWS::EC2::EIP
+     Properties:
+        Domain: vpc
+  Route:
+     Type: AWS::EC2::Route
+     Properties:
+        RouteTableId:
+           Ref: ProdrtApp
+        DestinationCidrBlock: 0.0.0.0/0
+        NatGatewayId:
+           Ref: NATProd
+
+  NATStage:
+   Type: AWS::EC2::NatGateway
+   Properties:
+      AllocationId:
+         Fn::GetAtt:
+         - EIP
+         - AllocationId
+      SubnetId:
+         Ref: STageBastionSubnetAZ1
+      Tags:
+      - Key: foo
+        Value: bar
+  EIP:
+     DependsOn: STAGEGatewayAttatch
+     Type: AWS::EC2::EIP
+     Properties:
+        Domain: vpc
+  Route:
+     Type: AWS::EC2::Route
+     Properties:
+        RouteTableId:
+           Ref: StagertApp
+        DestinationCidrBlock: 0.0.0.0/0
+        NatGatewayId:
+           Ref: NATStage
+
 Outputs:
   ClientPrefix:
     Description: Client Prefix1
